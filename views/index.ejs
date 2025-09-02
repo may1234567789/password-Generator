@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Password Generator</h1>
+        <p class="subtitle">Create secure passwords with customizable options</p>
+
+        <form action="/generate" method="POST">
+  <div class="options">
+    <div class="option">
+      <input type="checkbox" id="uppercase" name="uppercase" checked>
+      <label for="uppercase">Uppercase (A-Z)</label>
+    </div>
+    <div class="option">
+      <input type="checkbox" id="lowercase" name="lowercase" >
+      <label for="lowercase">Lowercase (a-z)</label>
+    </div>
+    <div class="option">
+      <input type="checkbox" id="numbers" name="numbers" >
+      <label for="numbers">Numbers (0-9)</label>
+    </div>
+    <div class="option">
+      <input type="checkbox" id="symbols" name="symbols">
+      <label for="symbols">Symbols (!@#$%)</label>
+    </div>
+  </div>
+
+  <button class="generate-btn" type="submit">
+    Generate Password
+  </button>
+</form>
+        
+       <div class="password-display">
+      <% if (password) { %>
+        <span><%= password %></span>
+      <% } else { %>
+        <h3>No password generated</h3>
+      <% } %>
+        </div>
+        
+        
+       
+
+    <!-- <script>
+        const lengthSlider = document.getElementById('length');
+        const lengthValue = document.getElementById('lengthValue');
+        const passwordDisplay = document.getElementById('passwordDisplay');
+        const copyBtn = document.getElementById('copyBtn');
+        const strengthIndicator = document.getElementById('strengthIndicator');
+        
+        let currentPassword = '';
+        
+        // Update length display
+        lengthSlider.addEventListener('input', function() {
+            lengthValue.textContent = this.value;
+        });
+        
+        function generatePassword() {
+            const length = parseInt(document.getElementById('length').value);
+            const includeUppercase = document.getElementById('uppercase').checked;
+            const includeLowercase = document.getElementById('lowercase').checked;
+            const includeNumbers = document.getElementById('numbers').checked;
+            const includeSymbols = document.getElementById('symbols').checked;
+            
+            // Check if at least one option is selected
+            if (!includeUppercase && !includeLowercase && !includeNumbers && !includeSymbols) {
+                alert('Please select at least one character type!');
+                return;
+            }
+            
+            let charset = '';
+            let guaranteedChars = '';
+            
+            if (includeUppercase) {
+                charset += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                guaranteedChars += getRandomChar('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+            }
+            if (includeLowercase) {
+                charset += 'abcdefghijklmnopqrstuvwxyz';
+                guaranteedChars += getRandomChar('abcdefghijklmnopqrstuvwxyz');
+            }
+            if (includeNumbers) {
+                charset += '0123456789';
+                guaranteedChars += getRandomChar('0123456789');
+            }
+            if (includeSymbols) {
+                charset += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+                guaranteedChars += getRandomChar('!@#$%^&*()_+-=[]{}|;:,.<>?');
+            }
+            
+            let password = guaranteedChars;
+            
+            // Fill remaining length with random characters
+            for (let i = guaranteedChars.length; i < length; i++) {
+                password += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            
+            // Shuffle the password to avoid predictable patterns
+            password = shuffleString(password);
+            
+            currentPassword = password;
+            
+            // Display the password
+            passwordDisplay.innerHTML = password;
+            passwordDisplay.classList.add('has-password', 'animate');
+            
+            // Show copy button
+            copyBtn.classList.add('show');
+            
+            // Show strength indicator
+            showStrengthIndicator(password);
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                passwordDisplay.classList.remove('animate');
+            }, 500);
+        }
+        
+        function getRandomChar(str) {
+            return str.charAt(Math.floor(Math.random() * str.length));
+        }
+        
+        function shuffleString(str) {
+            return str.split('').sort(() => Math.random() - 0.5).join('');
+        }
+        
+        function copyPassword() {
+            if (currentPassword) {
+                navigator.clipboard.writeText(currentPassword).then(function() {
+                    copyBtn.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = '📋 Copy to Clipboard';
+                    }, 2000);
+                }).catch(function() {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = currentPassword;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    copyBtn.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        copyBtn.textContent = '📋 Copy to Clipboard';
+                    }, 2000);
+                });
+            }
+        }
+        
+        function calculatePasswordStrength(password) {
+            let strength = 0;
+            
+            // Length bonus
+            if (password.length >= 8) strength += 1;
+            if (password.length >= 12) strength += 1;
+            if (password.length >= 16) strength += 1;
+            
+            // Character type bonuses
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 2;
+            
+            return strength;
+        }
+        
+        function showStrengthIndicator(password) {
+            const strength = calculatePasswordStrength(password);
+            let strengthText = '';
+            let strengthClass = '';
+            
+            if (strength < 4) {
+                strengthText = '🔴 Weak Password - Consider adding more character types or length';
+                strengthClass = 'strength-weak';
+            } else if (strength < 6) {
+                strengthText = '🟡 Medium Password - Good but could be stronger';
+                strengthClass = 'strength-medium';
+            } else {
+                strengthText = '🟢 Strong Password - Excellent security!';
+                strengthClass = 'strength-strong';
+            }
+            
+            strengthIndicator.textContent = strengthText;
+            strengthIndicator.className = 'strength-indicator show ' + strengthClass;
+        }
+    </script> -->
+</body>
+</html>
